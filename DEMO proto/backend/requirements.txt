@@ -1,0 +1,2 @@
+# This local prototype uses only the Python 3.10+ standard library.
+# The full project may use FastAPI and AI providers later.

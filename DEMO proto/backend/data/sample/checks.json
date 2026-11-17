@@ -1,0 +1,8 @@
+{
+  "happy": {
+    "query": "FAN-12"
+  },
+  "negative": {
+    "query": "UNKNOWN"
+  }
+}

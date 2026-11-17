@@ -1,0 +1,7 @@
+{
+  "title": "Can This Part Replace That?",
+  "kind": "parts",
+  "category": "RAG",
+  "version": 2,
+  "mode": "Fictional specification/evidence demonstration. No live model or embeddings."
+}

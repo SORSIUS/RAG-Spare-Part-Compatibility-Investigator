@@ -1,0 +1,81 @@
+{
+  "parts": [
+    {
+      "id": "FAN-12",
+      "voltage": 12,
+      "width_mm": 80,
+      "connector": "2-pin",
+      "airflow": 30,
+      "source": "MAN-01",
+      "name": "Original bench fan"
+    },
+    {
+      "id": "ALT-A",
+      "voltage": 12,
+      "width_mm": 80,
+      "connector": "2-pin",
+      "airflow": 32,
+      "source": "CAT-02",
+      "name": "Same-fit alternative"
+    },
+    {
+      "id": "ALT-B",
+      "voltage": 24,
+      "width_mm": 80,
+      "connector": "2-pin",
+      "airflow": 35,
+      "source": "CAT-03",
+      "name": "Higher-voltage alternative"
+    },
+    {
+      "id": "ALT-C",
+      "voltage": 12,
+      "width_mm": 80,
+      "connector": null,
+      "airflow": 31,
+      "source": "CAT-04",
+      "name": "Incomplete catalogue entry"
+    }
+  ],
+  "documents": [
+    {
+      "id": "MAN-01",
+      "date": "2026-01-10",
+      "title": "Demo desk fan manual",
+      "text": "FAN-12: 12 V, 80 mm, 2-pin, minimum airflow 30 CFM. Noncritical bench demonstration only."
+    },
+    {
+      "id": "CAT-02",
+      "date": "2026-03-01",
+      "title": "Alternative A catalogue",
+      "text": "ALT-A: 12 V, 80 mm, 2-pin, 32 CFM."
+    },
+    {
+      "id": "CAT-03",
+      "date": "2026-03-01",
+      "title": "Alternative B catalogue",
+      "text": "ALT-B: 24 V, 80 mm, 2-pin, 35 CFM."
+    },
+    {
+      "id": "CAT-04",
+      "date": "2026-03-01",
+      "title": "Alternative C catalogue",
+      "text": "ALT-C: 12 V, 80 mm, connector unspecified, 31 CFM."
+    }
+  ],
+  "bulletin": {
+    "document": {
+      "id": "SB-05",
+      "date": "2026-04-12",
+      "title": "ALT-C connector service bulletin",
+      "text": "For ALT-C revision R2, the manufacturer documents a 2-pin connector. This fictional bulletin supplements the earlier catalogue; other specifications remain unchanged."
+    },
+    "updates": [
+      {
+        "part": "ALT-C",
+        "field": "connector",
+        "value": "2-pin"
+      }
+    ]
+  }
+}

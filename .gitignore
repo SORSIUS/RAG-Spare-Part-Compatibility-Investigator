@@ -1,0 +1,25 @@
+# Private credentials
+.env
+.env.*
+!.env.example
+
+# Python environments and cache
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node.js dependencies and build output
+node_modules/
+dist/
+build/
+
+# Generated local records
+**/data/runtime/
+
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db
