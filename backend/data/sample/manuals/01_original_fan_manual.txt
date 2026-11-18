@@ -1,0 +1,14 @@
+FICTIONAL TRAINING DOCUMENT - NOT FOR REAL EQUIPMENT
+Document: MAN-01 | Revision: R1 | Date: 2026-01-10
+Product category: noncritical bench ventilation fan
+Original part: FAN-12
+
+Required supply voltage: 12 V DC.
+Required frame width: 80 mm.
+Required electrical connector: 2-pin.
+Minimum required airflow: 30 CFM.
+
+Compare voltage, frame width, and connector by exact agreement. Airflow must
+meet or exceed the minimum. Physical depth, mounting holes, polarity, current
+draw, speed controls, and environmental ratings are outside this sample.
+A match on the listed fields is not approval to install a replacement.

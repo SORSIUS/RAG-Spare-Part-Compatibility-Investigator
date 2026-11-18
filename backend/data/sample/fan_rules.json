@@ -1,0 +1,6 @@
+[
+  {"field": "voltage", "label": "Supply voltage (V DC)", "operator": "exact"},
+  {"field": "width", "label": "Frame width (mm)", "operator": "exact"},
+  {"field": "connector", "label": "Connector", "operator": "exact"},
+  {"field": "airflow", "label": "Airflow (CFM)", "operator": "minimum"}
+]

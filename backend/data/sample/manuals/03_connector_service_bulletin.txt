@@ -1,0 +1,8 @@
+FICTIONAL TRAINING DOCUMENT - NOT FOR REAL EQUIPMENT
+Document: SB-05 | Revision: R1 | Date: 2026-04-12
+Applies to: ALT-C revision R2 only
+
+The electrical connector for ALT-C revision R2 is documented as 2-pin.
+This supplements the missing connector field in catalogue CAT-02.
+Other specifications remain unchanged. This bulletin does not describe
+other revisions and does not authorize installation.

@@ -1,0 +1,13 @@
+FICTIONAL TRAINING DOCUMENT - NOT FOR REAL EQUIPMENT
+Document: CAT-02 | Revision: R1 | Date: 2026-03-01
+
+Part ALT-A: 12 V DC, 80 mm frame, 2-pin connector, 32 CFM airflow.
+These four listed specifications meet the FAN-12 requirements in MAN-01.
+
+Part ALT-B: 24 V DC, 80 mm frame, 2-pin connector, 35 CFM airflow.
+The voltage conflicts with FAN-12's 12 V requirement. Matching other fields
+does not remove this electrical conflict.
+
+Part ALT-C revision R2: 12 V DC, 80 mm frame, 31 CFM airflow.
+The connector is not specified in this catalogue. Record it as unknown.
+Do not infer compatibility from an absent specification.

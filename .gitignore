@@ -19,6 +19,9 @@ build/
 # Generated local records
 **/data/runtime/
 
+# Downloaded manufacturer documents; review redistribution terms before publishing
+/backend/data/sources/
+
 # Logs and operating-system files
 *.log
 .DS_Store
