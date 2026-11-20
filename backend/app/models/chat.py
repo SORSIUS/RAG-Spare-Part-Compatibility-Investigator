@@ -16,6 +16,7 @@ class AnswerClaim(StrictModel):
 
 
 class GeneratedAnswer(StrictModel):
+    general_guidance: str = Field(default="", max_length=2400)
     insufficient_evidence: bool
     claims: list[AnswerClaim]
     unknowns: list[str]

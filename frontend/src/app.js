@@ -1,9 +1,13 @@
+import {markdown} from './components/markdown.js';
 import {request} from './services/api.js';
 import {textElement, renderSource, safePdfUrl} from './components/sources.js';
 import {renderComparison, downloadComparison} from './components/comparison.js';
 import {initializeTheme} from './services/theme.js';
+import {setupStorefront} from './components/storefront.js';
+import {renderChatProblem} from './components/chat-feedback.js';
 
 const $ = identifier => document.getElementById(identifier);
+const partsFinder = setupStorefront();
 let themeStorage;
 try { themeStorage = localStorage; } catch {}
 initializeTheme($('theme-toggle'), document.documentElement, themeStorage, window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -15,6 +19,8 @@ $('history-toggle').onclick = () => {
 let configuration, conversationId = null, messages = [], sources = [], selectedSource = null, busy = false, statusBusy = false;
 let comparison = null, loadingTimer;
 let uploadBusy = false, libraryBusy = false;
+let chatProblem = null;
+let pendingQuestion = '';
 try { conversationId = localStorage.getItem('part-investigator-conversation'); } catch {}
 
 function showError(message = '') { $('error').textContent = message; $('error').hidden = !message; }
@@ -28,7 +34,7 @@ function setBusy(value, label = 'Retrieving catalogue evidence and preparing the
   busy = value; $('loading').hidden = !value; $('question').disabled = value; $('new-chat').disabled = value; $('reindex').disabled = value;
   const searchReady = configuration?.search_ready ?? configuration?.catalogue_ready;
   $('search-evidence').disabled = value || !searchReady;
-  $('ask').disabled = value || !searchReady || !configuration?.llm_configured;
+  $('ask').disabled = value || !searchReady;
   document.querySelectorAll('[data-question]').forEach(button => button.disabled = value);
   document.querySelector('.conversation-pane').setAttribute('aria-busy', String(value));
   document.querySelectorAll('#compare-form input, #compare-form button').forEach(element => element.disabled = value || !configuration?.catalogue_ready);
@@ -75,36 +81,41 @@ function chooseSource(identifier) {
 
 function renderMessage(message) {
   const wrapper = textElement('article', undefined, 'message');
-  wrapper.append(textElement('div', message.question, 'user-question'));
+  wrapper.append(textElement('span', 'YOU', 'message-speaker user-speaker'), textElement('div', message.question, 'user-question'));
   const answer = textElement('div', undefined, 'answer-card');
   const header = textElement('div', undefined, 'answer-header');
   const titles = {answered: 'Here’s what the documents say', evidence_only: 'Sources for your question', insufficient_evidence: 'Let’s check a few details first', unverified_response: 'This answer needs a closer check'};
-  header.append(textElement('strong', message.summary || titles[message.status] || 'Your answer'), textElement('span', message.model ? 'WITH SOURCES' : message.answer_method === 'catalogue_rules' ? 'DOCUMENT CHECK' : 'EVIDENCE', 'answer-mode')); answer.append(header);
+  header.append(textElement('strong', 'Parts assistant'), textElement('span', message.model ? (message.claims.length ? 'DOCUMENT FINDINGS' : 'GENERAL EXPLANATION') : ['catalogue_rules', 'linked_catalogue'].includes(message.answer_method) ? 'DOCUMENT CHECK' : 'EVIDENCE', 'answer-mode')); answer.append(header);
+  answer.append(textElement('p', message.summary || titles[message.status] || 'Here’s what I found.', 'chat-answer-title'));
+  if (message.assistant_text) answer.append(textElement('p', message.assistant_text, 'claim'));
+  if (message.generation_note) answer.append(textElement('p', message.generation_note, 'answer-notice'));
+  if (message.claims.length) answer.append(textElement('h3', 'From the documents'));
   for (const claim of message.claims) {
-    const paragraph = textElement('p', claim.text, 'claim');
+    const paragraph = markdown(claim.text); paragraph.classList.add('claim');
     for (const citation of claim.citations) {
       const button = textElement('button', citation.source_id, 'citation-chip'); button.type = 'button'; button.title = citation.quote;
       button.onclick = () => { showSources(message.sources); chooseSource(citation.source_id); }; paragraph.append(button);
     }
     answer.append(paragraph);
   }
-  if (message.mode === 'evidence' && message.sources.length) {
-    const paragraph = textElement('p', `${message.sources.length} source passages are available. Select a citation to read the evidence, or use Enter for an explained answer once answer setup is complete.`, 'claim');
+  if ((message.mode === 'evidence' || ['provider_unavailable', 'unverified_response'].includes(message.status)) && message.sources.length) {
+    const paragraph = textElement('p', `${message.sources.length} references are available to check:`, 'claim');
     for (const source of message.sources) {
       const button = textElement('button', source.id, 'citation-chip'); button.type = 'button'; button.onclick = () => { showSources(message.sources); chooseSource(source.id); }; paragraph.append(button);
     }
     answer.append(paragraph);
   }
+  if (message.general_guidance) { const guidance = textElement('section', undefined, 'general-guidance'); guidance.append(textElement('h3', 'General explanation'), markdown(message.general_guidance)); answer.append(guidance); }
   if (message.unknowns.length) {
     const unknowns = textElement('div', undefined, 'unknowns'); unknowns.append(textElement('strong', 'What we still need to check'));
     for (const unknown of message.unknowns) unknowns.append(textElement('p', unknown)); answer.append(unknowns);
   }
   const followUps = textElement('div', undefined, 'follow-ups');
-  for (const question of message.follow_up_questions) { const button = textElement('button', question + ' →'); button.onclick = () => { $('question').value = question; $('question').focus(); }; followUps.append(button); }
+  for (const question of message.follow_up_questions) { const button = textElement('button', question + ' →'); button.onclick = () => { $('question').placeholder = question; $('question').focus(); }; followUps.append(button); }
   answer.append(followUps, textElement('p', message.notice, 'answer-notice'));
   const copy = textElement('button', 'Copy response', 'copy-answer');
   copy.onclick = async () => {
-    const value = [message.question, ...message.claims.map(claim => claim.text + ' ' + claim.citations.map(citation => '[' + citation.source_id + ']').join(' ')), ...message.unknowns, ...message.sources.map(source => source.id + ': ' + source.source + ', PDF page ' + source.page_number), message.notice].join('\n');
+    const value = [message.question, message.general_guidance || '', ...message.claims.map(claim => claim.text + ' ' + claim.citations.map(citation => '[' + citation.source_id + ']').join(' ')), ...message.unknowns, ...message.sources.map(source => source.id + ': ' + source.source + ', PDF page ' + source.page_number), message.notice].join('\n');
     try { await navigator.clipboard.writeText(value); copy.textContent = 'Copied'; } catch { showError('Clipboard permission is unavailable. You can select and copy the displayed text.'); }
   };
   answer.append(copy); wrapper.append(answer); return wrapper;
@@ -112,6 +123,13 @@ function renderMessage(message) {
 
 function drawMessages() {
   $('welcome').hidden = messages.length > 0; $('messages').replaceChildren(...messages.map(renderMessage));
+  if (pendingQuestion) {
+    const pending = textElement('article', undefined, 'message pending-message');
+    pending.append(textElement('span', 'YOU', 'message-speaker user-speaker'), textElement('div', pendingQuestion, 'user-question'));
+    $('messages').append(pending);
+  }
+  if (chatProblem) $('messages').append(renderChatProblem(chatProblem.question, chatProblem.error, () => { $('question').value = chatProblem.question; send('answer'); }));
+  $('chat-intro').hidden = messages.length > 0 || !!chatProblem || !!pendingQuestion;
   $('conversation-exports').hidden = !conversationId || !messages.length;
   if (conversationId) for (const format of ['markdown', 'json']) $('export-' + format).href = '/api/conversations/' + encodeURIComponent(conversationId) + '/export?format=' + format;
 }
@@ -121,17 +139,33 @@ async function listConversations() {
   $('conversations').replaceChildren(...response.conversations.map(conversation => {
     const button = textElement('button', conversation.title, 'conversation-link' + (conversation.id === conversationId ? ' active' : '')); button.title = conversation.title;
     if (conversation.id === conversationId) button.setAttribute('aria-current', 'true');
-    button.onclick = () => loadConversation(conversation.id); return button;
+    button.onclick = () => loadConversation(conversation.id);
+    const row=textElement('div',undefined,'chat-history-row');
+    const remove=textElement('button','Delete','delete-chat');remove.type='button';remove.setAttribute('aria-label','Delete conversation: '+conversation.title);
+    remove.onclick=async()=>{
+      if(busy)return;
+      remove.disabled=true;
+      try {
+        await request('conversations/'+encodeURIComponent(conversation.id)+'/delete',{});
+        if(conversationId===conversation.id) $('new-chat').click();
+        await listConversations();
+        const undo=textElement('button','Conversation deleted. Undo','outline-button');
+        undo.onclick=async()=>{try{await request('conversations/'+encodeURIComponent(conversation.id)+'/restore',{});undo.remove();await listConversations();}catch(error){showError(error.message);}};
+        $('conversations').prepend(undo);
+      }catch(error){showError(error.message);remove.disabled=false;}
+    };
+    row.append(button,remove);return row;
   }));
   if (!response.conversations.length) $('conversations').append(textElement('p', 'Your saved conversations will appear here.', 'history-empty'));
 }
 
-async function loadConversation(identifier) {
+async function loadConversation(identifier, navigate = true) {
   if (busy) return;
   setBusy(true); showError();
   try {
+    if (navigate) location.hash = '#chat';
     const conversation = await request('conversations/' + encodeURIComponent(identifier));
-    conversationId = conversation.id; messages = conversation.messages; saveConversation(); drawMessages();
+    conversationId = conversation.id; messages = conversation.messages; chatProblem = null; saveConversation(); drawMessages();
     showSources(messages.at(-1)?.sources || []); $('pdf-preview').hidden = true; $('pdf-frame').removeAttribute('src'); await listConversations();
   } catch (error) {
     showError(error.message);
@@ -143,20 +177,23 @@ async function loadConversation(identifier) {
 async function send(mode) {
   const question = $('question').value.trim();
   if (busy || !question) { if (!question) $('question').focus(); return; }
-  if (mode === 'answer' && !configuration?.llm_configured) { showError('Complete answer setup in backend/.env, refresh status, or search sources.'); return; }
-  setBusy(true); showError();
+  chatProblem = null; pendingQuestion = question; drawMessages(); setBusy(true); showError();
+  $('messages').lastElementChild?.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   try {
     const message = await request('chat', {question, conversation_id: conversationId, mode});
-    conversationId = message.conversation_id; messages.push(message); saveConversation(); drawMessages(); showSources(message.sources); $('question').value = ''; $('pdf-preview').hidden = true; $('pdf-frame').removeAttribute('src');
-    $('messages').lastElementChild?.scrollIntoView({behavior: 'smooth', block: 'nearest'}); await listConversations();
-  } catch (error) { showError(error.message); }
+    pendingQuestion = ''; conversationId = message.conversation_id; messages.push(message); saveConversation(); drawMessages(); showSources(message.sources); $('question').value = ''; $('pdf-preview').hidden = true; $('pdf-frame').removeAttribute('src');
+    $('messages').lastElementChild?.scrollIntoView({behavior: 'smooth', block: 'nearest'}); await listConversations().catch(() => {});
+  } catch (error) {
+    pendingQuestion = ''; chatProblem = {question, error}; drawMessages();
+    $('messages').lastElementChild?.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  }
   finally { setBusy(false); }
 }
 
 $('chat-form').onsubmit = event => { event.preventDefault(); send('answer'); };
 $('search-evidence').onclick = () => send('evidence');
-$('question').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); send(configuration?.llm_configured ? 'answer' : 'evidence'); } };
-$('new-chat').onclick = () => { if (busy) return; conversationId = null; messages = []; saveConversation(); drawMessages(); showSources([]); $('pdf-preview').hidden = true; $('pdf-frame').removeAttribute('src'); showError(); $('question').value = ''; $('question').focus(); listConversations().catch(error => showError(error.message)); };
+$('question').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); send('answer'); } };
+$('new-chat').onclick = () => { if (busy) return; location.hash = '#chat'; conversationId = null; messages = []; chatProblem = null; saveConversation(); drawMessages(); showSources([]); $('pdf-preview').hidden = true; $('pdf-frame').removeAttribute('src'); showError(); $('question').value = ''; $('question').focus(); listConversations().catch(error => showError(error.message)); };
 
 function drawLibrary(library) {
   const labels = {queued: 'Saved · preparing in background', indexing: 'Preparing · you can keep using the app', ready: 'Ready to search', needs_ocr: 'Needs OCR before it can be searched', failed: 'Could not prepare this document', verification: 'Test reference · excluded from answers'};
@@ -213,5 +250,7 @@ for (const format of ['markdown', 'json']) $('comparison-' + format).onclick = (
 document.querySelectorAll('[data-question]').forEach(button => button.onclick = () => { $('question').value = button.dataset.question; $('question').focus(); });
 window.addEventListener('focus', () => { if (!busy) updateStatus(); });
 await updateStatus();
-try { await listConversations(); if (conversationId) await loadConversation(conversationId); } catch (error) { showError(error.message); }
+await partsFinder.initialize();
+try { await listConversations(); if (conversationId) await loadConversation(conversationId, false); } catch (error) { showError(error.message); }
+
 

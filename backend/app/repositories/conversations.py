@@ -13,6 +13,9 @@ class ConversationRepository:
         with self.connect() as connection:
             connection.executescript("CREATE TABLE IF NOT EXISTS conversations (id TEXT PRIMARY KEY, title TEXT NOT NULL, updated_at TEXT NOT NULL); CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, conversation_id TEXT NOT NULL REFERENCES conversations(id), created_at TEXT NOT NULL, body TEXT NOT NULL);")
 
+            if "deleted" not in {row[1] for row in connection.execute("PRAGMA table_info(conversations)")} :
+                connection.execute("ALTER TABLE conversations ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0")
+
     @contextmanager
     def connect(self):
         connection = sqlite3.connect(self.path, timeout=10)
@@ -23,14 +26,18 @@ class ConversationRepository:
         finally:
             connection.close()
 
+    def set_deleted(self, conversation_id, deleted=True):
+        with self.connect() as connection:
+            return connection.execute("UPDATE conversations SET deleted=? WHERE id=?", (int(deleted), conversation_id)).rowcount > 0
+
     def list(self) -> list[dict]:
         with self.connect() as connection:
-            rows = connection.execute("SELECT id,title,updated_at FROM conversations ORDER BY updated_at DESC LIMIT 100").fetchall()
+            rows = connection.execute("SELECT id,title,updated_at FROM conversations WHERE deleted=0 ORDER BY updated_at DESC LIMIT 100").fetchall()
         return [dict(zip(["id", "title", "updated_at"], row)) for row in rows]
 
     def get(self, conversation_id: str) -> dict | None:
         with self.connect() as connection:
-            row = connection.execute("SELECT id,title,updated_at FROM conversations WHERE id=?", (conversation_id,)).fetchone()
+            row = connection.execute("SELECT id,title,updated_at FROM conversations WHERE id=? AND deleted=0", (conversation_id,)).fetchone()
             if row is None:
                 return None
             messages = connection.execute("SELECT body FROM messages WHERE conversation_id=? ORDER BY rowid", (conversation_id,)).fetchall()
@@ -41,7 +48,7 @@ class ConversationRepository:
         identifier = conversation_id or uuid4().hex
         message = {**answer, "id": uuid4().hex, "question": question, "created_at": timestamp, "conversation_id": identifier}
         with self.connect() as connection:
-            if conversation_id and connection.execute("SELECT 1 FROM conversations WHERE id=?", (identifier,)).fetchone() is None:
+            if conversation_id and connection.execute("SELECT 1 FROM conversations WHERE id=? AND deleted=0", (identifier,)).fetchone() is None:
                 raise ValueError("Conversation not found. Start a new conversation.")
             connection.execute("INSERT INTO conversations(id,title,updated_at) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET updated_at=excluded.updated_at", (identifier, question[:80], timestamp))
             connection.execute("INSERT INTO messages VALUES(?,?,?,?)", (message["id"], identifier, timestamp, json.dumps(message, ensure_ascii=False)))

@@ -5,7 +5,7 @@ from uuid import uuid4
 from contextlib import asynccontextmanager
 from typing import Literal
 
-from fastapi import FastAPI, Request, UploadFile, File
+from fastapi import FastAPI, Request, UploadFile, File, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response, FileResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -55,7 +55,7 @@ def create_app(settings_loader=Settings.load, catalogue_repository=None, client_
             yield
         library.stop()
 
-    application = FastAPI(title="Automotive Spare-Part Compatibility Investigator", version="1.1.0", lifespan=lifespan)
+    application = FastAPI(title="Automotive Spare-Part Compatibility Investigator", version="1.2.0", lifespan=lifespan)
     application.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
 
     @application.middleware("http")
@@ -82,7 +82,7 @@ def create_app(settings_loader=Settings.load, catalogue_repository=None, client_
 
     @application.exception_handler(RequestValidationError)
     async def validation_error(request, error):
-        return JSONResponse({"error": {"code": "invalid_request", "message": "Invalid request. Check the required fields, nonempty identifiers/question, supported mode/format, and limit (1–12)."}}, status_code=422)
+        return JSONResponse({"error": {"code": "invalid_request", "message": "Invalid request. Check the required fields, nonempty identifiers/question, supported mode/format, and endpoint limits."}}, status_code=422)
 
     def current_settings():
         try:
@@ -131,6 +131,23 @@ def create_app(settings_loader=Settings.load, catalogue_repository=None, client_
     def conversations():
         return {"conversations": application.state.conversations.list()}
 
+    @application.post("/api/conversations/{conversation_id}/delete")
+    def delete_conversation(conversation_id: str):
+        if not application.state.conversations.set_deleted(conversation_id):
+            raise AppError("conversation_missing", "Conversation not found.", 404)
+        return {"deleted": True}
+
+    @application.post("/api/conversations/{conversation_id}/restore")
+    def restore_conversation(conversation_id: str):
+        if not application.state.conversations.set_deleted(conversation_id, False):
+            raise AppError("conversation_missing", "Conversation not found.", 404)
+        return {"restored": True}
+
+    @application.post("/api/parts/overview")
+    def parts_overview(body: dict):
+        from app.services.parts_overview import overview
+        return overview(application.state.library, current_settings(), client_factory, body)
+
     @application.get("/api/conversations/{conversation_id}")
     def conversation(conversation_id: str):
         result = application.state.conversations.get(conversation_id)
@@ -166,6 +183,49 @@ def create_app(settings_loader=Settings.load, catalogue_repository=None, client_
     @application.get("/api/documents")
     def documents():
         return application.state.library.status()
+
+    @application.post("/api/parts/references")
+    def part_references(body: dict):
+        import re
+        query = str(body.get("query", ""))[:500]
+        category = body.get("category", "")
+        terms = {"filters": r"filter|filtration", "brakes": r"brak|caliper|rotor",
+                 "ignition": r"spark|ignition|glow plug", "engine": r"engine|timing|coolant|gasket",
+                 "electrical": r"alternator|starter|battery|electrical|sensor"}
+        pattern = terms.get(category)
+        if not pattern or not query.strip():
+            return {"sources": []}
+        sources = application.state.answers.sources(query, 6)
+        relevant = [source for source in sources if re.search(pattern, source["content"], re.I)]
+        if len(relevant) < 3:
+            terms = {"filters": "filter", "brakes": "brake", "ignition": "spark plug", "engine": "engine", "electrical": "electrical battery alternator"}
+            extra = application.state.library.cached_search(terms[category], 24)
+            seen = {(s["source"], s["page_number"], s["content"]) for s in relevant}
+            for source in extra:
+                key = (source["source"], source["page_number"], source["content"])
+                if key not in seen and re.search(pattern, source["content"], re.I):
+                    relevant.append({**source, "id": "R" + str(len(relevant) + 1)})
+                    seen.add(key)
+        return {"sources": relevant[:3]}
+
+    @application.get("/api/fitments/options")
+    def fitment_options():
+        return application.state.library.fitments.options()
+
+    @application.get("/api/fitments")
+    def find_fitments(make: str = Query("", max_length=60), model: str = Query("", max_length=100),
+                      year: int | None = Query(None, ge=1950, le=2100), category: Literal["all", "suspension", "ignition", "filters", "brakes", "electrical", "engine"] = "all",
+                      axle: Literal["", "front", "rear"] = "", chassis: str = Query("", max_length=40),
+                      part: str = Query("", max_length=40), limit: int = Query(24, ge=1, le=48), offset: int = Query(0, ge=0, le=100000),
+                      engine: str = Query("", max_length=40), component: str = Query("", max_length=40), market: str = Query("", max_length=60)):
+        return application.state.library.fitments.search(make, model, year, category, axle, chassis, part, limit, offset, engine, component, market)
+
+    @application.get("/api/replacements")
+    def replacements(brand: str = Query(..., min_length=1, max_length=60),
+                     part: str = Query(..., min_length=1, max_length=40),
+                     limit: int = Query(24, ge=1, le=48)):
+        from app.repositories.replacements import ReplacementRepository
+        return ReplacementRepository(application.state.library.runtime).search(brand, part, limit)
 
     @application.post("/api/documents/upload", status_code=202)
     async def upload_document(file: UploadFile = File(...)):
@@ -254,3 +314,4 @@ def create_app(settings_loader=Settings.load, catalogue_repository=None, client_
 
 
 app = create_app()
+

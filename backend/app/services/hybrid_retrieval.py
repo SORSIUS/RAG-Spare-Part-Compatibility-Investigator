@@ -2,12 +2,25 @@ import re
 
 
 def retrieve_sources(lexical, library, question, top_k):
+    if library is not None and hasattr(library, "names_document") and library.names_document(question):
+        return [{**source, "id": "S" + str(index + 1), "retrieval_method": "semantic/named document"}
+                for index, source in enumerate(library.search(question, top_k))]
+    linked = library.linked_sources(question, top_k) if library is not None and hasattr(library, "linked_sources") else []
+    if linked:
+        return [{**source, "id": "S" + str(index + 1)} for index, source in enumerate(linked)]
     keywords = lexical.retrieve(question, top_k)
     if library is None:
         return keywords
-    if hasattr(library, "names_document") and library.names_document(question):
-        return [{**source, "id": "S" + str(index + 1), "retrieval_method": "semantic/named document"}
-                for index, source in enumerate(library.search(question, top_k))]
+    from app.services.passage_quality import category_sources, PATTERNS, substantive
+    concept = bool(re.search(r"what .*?(?:does|do|is|are)|how .*?work|purpose|function", question, re.I))
+    categories=[category for category,pattern in PATTERNS.items() if re.search(pattern,question,re.I)]
+    if categories and hasattr(library,"cached_search"):
+        focused=category_sources(library,categories[0],question,top_k)
+        if concept:
+            return [{**source,"id":"S"+str(i+1)} for i,source in enumerate(focused)]
+        if categories[0] not in {"filters","ignition","suspension"}:
+            # The structured DENSO cabin-filter catalogue cannot answer brake questions.
+            return [{**source,"id":"S"+str(i+1)} for i,source in enumerate(focused)]
     known = set(lexical.identifiers)
     requested = [value.lower() for value in re.findall(r"\bDCF\d{3}[PKA]\b", question, re.IGNORECASE)]
     extra = []

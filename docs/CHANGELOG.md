@@ -1,5 +1,44 @@
 # Detailed change history
 
+## 2026-11-20 — Vehicle/year/engine questions without part numbers
+
+- Added engine size/code, component and optional market filtering to indexed fitment retrieval; exposed these through REST and engine input in the frontend.
+- Added ordinary-owner question parsing and a saved year/engine clarification flow. Complete structured vehicle questions return checked cited catalogue details without Groq calls; unknown engine details remain explicit.
+- Imported 60 reviewed Toyota Taiwan spark-plug application rows from DENSO Asia pages 99–100, preserving model variants, engine, production range, OEM number, standard plug and physical source page. Generic model names normalize variants while keeping the full original label.
+- Excluded ambiguous cells, engine-less rows and unsupported date forms. Kept explicit regional mismatches out of structured results and avoided converting source-market rows into global approvals.
+- Verification: 120 backend / 13 frontend tests; live multi-turn history, engine/component filters, PDF sources and actual MCP queries passed. No re-embedding or paid LLM calls; no new browser walkthrough.
+
+## 2026-11-20 — More official catalogues and useful incomplete answers
+
+- Downloaded and indexed DENSO Japan, Europe/USA and Others/cross-reference sections: 179 pages, 3,217 new embedding windows. Older documents were reused.
+- Added a hash-locked, column-bounded OEM-to-standard-DENSO parser and cached external reference tables. Imported 1,341 number references (137 Toyota); retained vehicle-fitment caveats. This is alongside, not equivalent to, the existing 345 KYB application references.
+- Improved empty lookup messages, added continuation into chat, and retained checked cited findings in partial answers. Missing evidence never becomes an invented yes/no.
+- Extended identifier/citation guardrails, safe checked fallback, parser/partial-answer regressions and live API/MCP verification. Final checks: 116 backend / 13 frontend tests; no LLM calls. Fresh browser interaction was not tested.
+
+## 2026-11-20 — Materials and directed replacement references
+
+- Registered four user-added learning/product-overview PDFs: all ready, 989 local embedding windows combined. Older documents were reused.
+- Added an indexed original-brand/number lookup, derived only from reviewed single-OEM/single-aftermarket KYB cells. Current snapshot: 345 qualified application references, 144 distinct brand/original combinations, 14 makes; 168 Toyota application references.
+- Added REST `/api/replacements`, an expandable frontend lookup, and replacement-question evidence through the existing MCP search tool. Preserved source hashes/pages and application conditions.
+- Grouped cells, reverse/transitive links and arbitrary uploaded tables do not create replacement edges. Source reimport invalidates its derived links.
+- Added registration/live-verification scripts, regression coverage and a material-download guide. No Groq calls were needed for this update. Browser visual QA was not run.
+
+## 2026-11-20 — Gradients, new reference PDFs and chat recovery
+
+Added gradient themes, original illustrative automotive image, conversation bubbles/composer, pending-question feedback and helpful retry replies. Provider errors now create source-preserving assistant recovery messages; exports include them. Improved short vehicle-detail follow-up context. Added two official DENSO 2025 PDF references with a reusable bounded download/index script and provenance manifest.
+
+Verification finished with 107 backend tests, 13 frontend tests, JS syntax and the Node/Python HTTP/MCP HTTP+stdio walkthrough passing. Browser visual QA was blocked by the computer-use URL-confidence policy and remains explicitly outstanding. README/setup and progress notes updated. No further LLM/image calls were used for the final verification; no commit or push.
+
+## 2026-11-20 — Vehicle-first interface and indexed fitment links
+
+Added the official KYB MEA accessories importer and local SQLite vehicle/application/component/part/source index. Supported tables supplied 3,814 associations, 14 makes and 178 model groups, including 395 Corolla associations. Hash/schema history reuses completed imports, and matching questions skip broad lexical/Chroma retrieval. OEM cell groups remain grouped rather than invented individual interchangeability mappings. Other PDF layouts require separate reviewed adapters.
+
+Built automotive navigation, make/model/year/position/chassis selection, application cards, source actions, compact catalogue uploads and saved investigations. Existing light/dark modes and ordinary document RAG remain. Drawings are labelled illustrations; no prices/stock or installation approval are implied. Research and coverage limits: FITMENT_INDEX.md.
+
+Fixed duplicate PDF header contamination and model names containing digits. The live LLM explanation changed a production code; validation rejected it. Added a checked source-wording fallback, disclosed in the UI, plus fabricated KYB/chassis identifier rejection. The final live retest used that fallback.
+
+Verification: 107 backend tests, 12 frontend tests, JS syntax, exact/empty API queries, fingerprinted PDF, cached import, desktop/mobile browser checks, saved history and part-to-question flow. Local indexed-query median 6.17 ms over 20 calls excludes HTTP/LLM time. No commit/push or demo changes in this update. Setup remains in the root README.
+
 Historical entries describe the state at the time. See the root README for current setup and capabilities.
 
 ## Milestones

@@ -1,5 +1,19 @@
 # Agent access: MCP and REST
 
+## Vehicle/year/engine lookup
+
+`GET /api/fitments?make=Toyota&model=Corolla&year=2012&engine=1.8&axle=front&component=shock_absorber`
+
+Category supports `suspension` (default) or `ignition`. Additional filters: `engine` (size, cc or engine code), `component`, `market`. Explicitly different known markets are excluded; an unspecified source market remains unknown, not confirmed.
+
+MCP `search_catalogue` examples: `Toyota Corolla 2012 1.8 front shock absorbers` and `Toyota Corolla 2005 1ZZ-FE Taiwan spark plugs`. These use direct vehicle links before broad retrieval. Chat additionally asks for missing year/engine details and combines short replies with the saved question.
+
+## Original-part replacement references
+
+`GET /api/replacements?brand=Toyota&part=48609-12500` returns directed, qualified references from reviewed single-number KYB cells. Response includes `status`, `records`, `total`, `limit` and `notice`; records retain original and alternative numbers, application/production conditions, source hash/page and local PDF URL. Limit is 1–48. Results may be truncated to limit; total counts application rows, not unique products.
+
+The existing MCP `search_catalogue` tool accepts `{"query":"Replacement for Toyota 48609-12500?","limit":6}` and returns indexed reference evidence without an LLM call. No new MCP tool or write permissions were added. Missing links mean not documented, not incompatible.
+
 Added 2026-11-18. Both interfaces use CatalogueTools, CatalogueService, and the same local PDF repository. The calling agent must support MCP or be able to call HTTP APIs; exposing a server does not automatically connect every agent.
 
 ## What is MCP here?

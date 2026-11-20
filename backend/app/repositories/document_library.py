@@ -90,6 +90,16 @@ class DocumentLibrary:
             return
         try:
             self.update(identifier, status="indexing", error=None)
+            # Only the reviewed catalogue revision has a table adapter. Other
+            # uploads keep the generic PDF/Chroma path; never guess their fitment.
+            from app.services.kyb_fitment_parser import SOURCE_SHA, SOURCE_URL, SCHEMA as FITMENT_SCHEMA, extract_catalogue
+            if identifier == SOURCE_SHA and not self.fitments.imported(identifier, FITMENT_SCHEMA):
+                records, inspected = extract_catalogue(path, identifier)
+                if not records:
+                    raise ValueError("The supported fitment catalogue yielded no rows.")
+                for item in records:
+                    item["source"] = record["name"]
+                self.fitments.replace_source(identifier, record["name"], FITMENT_SCHEMA, SOURCE_URL, inspected, records)
             cache = self.root / (identifier[:24] + "-chunks.json")
             if cache.exists():
                 saved = json.loads(cache.read_text(encoding="utf-8"))
@@ -154,6 +164,15 @@ class DocumentLibrary:
         self.thread = threading.Thread(target=worker, daemon=True, name="document-indexer")
         self.thread.start()
 
+    @property
+    def fitments(self):
+        from app.repositories.fitments import FitmentRepository
+        return FitmentRepository(self.runtime)
+
+    def linked_sources(self, query, limit=8):
+        from app.repositories.replacements import ReplacementRepository
+        return ReplacementRepository(self.runtime).question_sources(query, limit) or self.fitments.question_sources(query, limit)
+
     def stop(self):
         self.stop_event.set()
 
@@ -161,6 +180,42 @@ class DocumentLibrary:
         return any(record["name"].casefold() in query.casefold() for record in self.list())
 
     def search(self, query, limit=12):
+        from chromadb.errors import InternalError
+        try:
+            return self._semantic_search(query, limit)
+        except InternalError:
+            # Keep original PDF/page provenance if the local vector index is unavailable.
+            return self.cached_search(query, limit)
+
+    def cached_search(self, query, limit=12):
+        records = [row for row in self.list() if row["status"] == "ready"]
+        named = [row for row in records if row["name"].casefold() in query.casefold()]
+        if self.names_document(query) and not named:
+            return []
+        terms = set(re.findall(r"[a-z0-9]{3,}", query.casefold())) - {"the", "and", "what", "for", "which", "are", "can", "parts"}
+        matches = []
+        for record in named or records:
+            path = self.root / (record["id"][:24] + "-chunks.json")
+            if not path.is_file():
+                continue
+            saved = json.loads(path.read_text(encoding="utf-8"))
+            if saved.get("sha256") != record["id"]:
+                continue
+            for chunk in saved["chunks"]:
+                text = chunk["text"]
+                from app.services.passage_quality import substantive
+                if not substantive(text):
+                    continue
+                words = set(re.findall(r"[a-z0-9]{3,}", text.casefold()))
+                score = len(terms & words)
+                if not score:
+                    continue
+                page = chunk["page_number"]
+                matches.append((score, {"chunk_id": chunk.get("id", hashlib.sha256(text.encode()).hexdigest()), "title": record["name"] + " · page " + str(page), "content": text, "raw_excerpt": text, "source": record["name"], "page_number": page, "section": "document_passage", "document_id": record["id"], "retrieval_method": "cached keyword fallback", "pdf_url": f"/api/documents/{record['id']}/pdf#page={page}"}))
+        matches.sort(key=lambda pair: -pair[0])
+        return [source for _, source in matches[:limit]]
+
+    def _semantic_search(self, query, limit=12):
         records = [record for record in self.list() if record["status"] == "ready"]
         named = [record for record in records if record["name"].casefold() in query.casefold()]
         if self.names_document(query) and not named:
@@ -188,3 +243,4 @@ class DocumentLibrary:
     def status(self):
         rows = self.list()
         return {"backend": "Chroma", "embedding_model": "all-MiniLM-L6-v2 (local ONNX, 384 dimensions)", "ready_documents": sum(row["status"] == "ready" for row in rows), "pending_documents": sum(row["status"] in {"queued", "indexing"} for row in rows), "indexed_chunks": sum(row["indexed"] for row in rows if row["status"] == "ready"), "documents": rows}
+

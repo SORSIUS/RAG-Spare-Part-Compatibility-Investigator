@@ -1,5 +1,47 @@
 # Main application verification
 
+## 2026-11-20 — Owner vehicle lookup
+
+Final backend suite: 120 tests passed; frontend suite: 13 passed; JavaScript syntax passed. Tests cover normal owner wording, avoiding the Honda Fit verb collision, two-vehicle ambiguity, year/engine/component filters, engine-code normalization, missing/ambiguous parser cells and explicit market exclusion.
+
+`scripts/verify_vehicle_lookups.py` passed against the running app: Corolla question → year → engine/front follow-up; three messages saved in history; cited vehicle candidates with no LLM call; Corolla 2005 1ZZ-FE Taiwan → DENSO K16R-U11 and working PDF; Pakistan market filter excluded that Taiwan row; engine-filtered suspension REST and both real MCP searches passed. The import reused its cached source/parser revision.
+
+Both source pages 99–100 were rendered and inspected for model/engine/year/plug alignment. New frontend engine input has syntax and served-asset coverage, not a fresh browser click/visual walkthrough. The 60 imported rows are a supported subset, not every Toyota or every regional edition.
+
+## 2026-11-20 — Additional DENSO references
+
+Final backend suite: **116 passed**. Frontend suite: **13 passed**, plus JavaScript syntax. New tests cover local header scope, annotated/missing/clipped cell rejection, idempotent import, indexed reference retrieval, checked-answer citations, fabricated replacement identifiers, helpful empty responses and preservation of cited partial findings.
+
+All three new PDFs are ready (53/61/65 pages; 919/889/1,409 embedding windows). Repeating the reference import returned cached=true. Physical page 29 was rendered and visually checked for the three-block OEM/standard/upgrade layout.
+
+Live replacement verification passed through the running Node proxy: KYB and DENSO reference lookups, unknown/invalid-limit handling, source PDF serving, static frontend component, and real MCP search for Toyota 90919-01095 → DENSO W16ETR-S. These tests used no Groq calls. The latest frontend form/message change has syntax/HTTP verification, not a fresh browser click/visual walkthrough.
+
+## 2026-11-20 — Original-number replacement index
+
+- Final backend suite: **112 tests passed**. Frontend: **13 tests passed**, plus JavaScript syntax checks.
+- Five focused replacement tests cover normalized numbers, source/application preservation, grouped-cell exclusion, wrong-brand/reverse rejection, source invalidation, explicit-number routing and checked-fallback citations.
+- Live `scripts/verify_replacements.py` passed through Node on port 3201: Toyota 48609-12500 produced five qualified SM7210 application rows; original PDF serving passed; unknown and invalid-limit handling passed; updated frontend asset served; REST search and a real MCP client both retrieved the indexed replacement evidence.
+- Four user-supplied PDFs are ready with 989 indexed embedding windows combined. Their content is for document search; no arbitrary replacement edges were created.
+- No Groq calls were made for this update. No fresh browser interaction/visual walkthrough was performed; HTTP asset checks do not verify layout or clicks.
+
+## Latest gradient/chat iteration — 2026-11-20
+
+Passed: 107 backend tests, 13 frontend tests and all JavaScript syntax checks. The updated isolated `scripts/verify_main_app.py` passed Node/Python HTTP, all new static assets, real-catalogue evidence, persisted history/follow-ups, citation PDF route, missing-key conversational recovery, auto-reload, comparison API, exports, and MCP over HTTP plus stdio. Paid LLM calls were explicitly disabled in this final integration run. Report: ignored `backend/data/runtime/main_app_verification.json`.
+
+Provider failures now produce saved assistant recovery messages, retaining source passages and no fabricated claims. Tests assert provider-auth recovery content and persistence; frontend tests cover transport/limit/timeout guidance. Markdown export retains assistant recovery text. The API's handled provider failure is now HTTP 200 with `status=provider_unavailable`; malformed requests and missing conversations retain their proper error responses.
+
+Fresh browser visual verification could not finish. The Windows computer-use tool stopped because it could not determine the current browser URL with enough confidence to enforce policy. No subsequent browser input was attempted. The older storefront screenshots do not verify this new gradient/photo/chat iteration. Visual review is outstanding; automated frontend/asset tests are not represented as a browser pass.
+
+## 2026-11-20 — Indexed fitments and automotive frontend
+
+Final regression results: **107 backend tests and 12 frontend tests passed**, plus JS syntax checks. New checks cover columns, year/chassis isolation, numeric model headings, duplicate headers, idempotent import, hashes, broad-search bypass, checked fallback and fabricated KYB identifiers.
+
+Live API: 3,814 associations, 14 makes, 178 model groups. Corolla / 2012 / front / ZRE152 returned nine listings; unknown chassis returned zero. Original fingerprinted PDF returned HTTP 200 application/pdf. Cached import skipped extraction. Twenty local repository lookups measured median 6.17 ms and max 6.68 ms, excluding HTTP/browser/model latency.
+
+Browser checked at 1280x900 and 390x844; temporary viewport overrides reset. Verified filters, part cards, source URLs, saved history, empty-result message, both themes and part-card-to-question flow. No horizontal mobile overflow. Screenshots: storefront-desktop.jpg, storefront-parts.jpg, storefront-mobile.jpg.
+
+The real generated part explanation changed a production code and failed validation. The retest correctly displayed a checked catalogue fallback with S1 and a disclosure. This verifies guardrail/fallback behavior, not successful generated fitment wording. Physical source page 96 was rendered and visually spot checked. No full manual audit of every row is claimed. See FITMENT_INDEX.md for source hash, adapter and coverage limits. Entries below describe earlier states.
+
 Date: 2026-11-18. This document covers the main app, separately from DEMO proto.
 
 ## Results

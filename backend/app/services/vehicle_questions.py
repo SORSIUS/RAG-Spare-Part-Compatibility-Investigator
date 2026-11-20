@@ -9,7 +9,8 @@ VEHICLE_QUESTIONS = [
 
 
 def needs_vehicle_details(question):
-    component = re.search(r"\b(suspensions?|shocks?|struts?|springs?|brakes?|steering)\b", question, re.IGNORECASE)
+    component = re.search(r"\b(suspensions?|shocks?|struts?|springs?)\b", question, re.IGNORECASE)
     swap = re.search(r"\b(swap|interchange|compatible)\b|\b(can|could)\b.*\b(use|fit|install)\b", question, re.IGNORECASE)
     years = re.findall(r"\b(?:19|20)\d{2}\b", question)
-    return bool(component and swap and len(years) < 2)
+    two_cars = bool(re.search(r"\b(?:swap|instead|into|from|between)\b|replace.+with|corolla.*city|city.*corolla", question, re.I))
+    return bool(component and swap and two_cars and len(years) < 2)

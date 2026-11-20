@@ -1,0 +1,137 @@
+{
+  "updated_at": "2026-11-20T12:54:08.3459+05:00",
+  "scope": "Missing relevant car-reference PDFs from the official pages previously shared, plus Corolla 2012 manuals and a brake catalogue. Existing regional PDFs kept; combined duplicate bundles, non-car equipment and legal PDFs excluded.",
+  "documents": [
+    {
+      "name": "denso_spark_plug_australia_2025.pdf",
+      "url": "https://am.denso.com/plug-global/wp-content/uploads/sites/23/catalog_2_australia_2025.pdf",
+      "market": "Australia",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\denso_spark_plug_australia_2025.pdf",
+      "sha256": "f40856408de02143f60d16b1216c84255a1646c866e3316257a2eeaf903d2b6a",
+      "pages": 110,
+      "bytes": 2762355,
+      "library_status": "ready"
+    },
+    {
+      "name": "denso_spark_plug_tt_australia.pdf",
+      "url": "https://www.denso.com.au/public/resources/DENSO_%20Spark%20Plug%20TT%20Catalogue.pdf",
+      "market": "Australia",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\denso_spark_plug_tt_australia.pdf",
+      "sha256": "6789d972500e92e3fe2922c257c8658e8797b9127048305a842e1859fefd45f3",
+      "pages": 255,
+      "bytes": 6932159,
+      "library_status": "ready"
+    },
+    {
+      "name": "denso_spark_plug_australia_2021.pdf",
+      "url": "https://www.denso.com.au/public/resources/DENSO_SparkPlugCatalogue-2021_Australia.pdf",
+      "market": "Australia",
+      "status": "failed",
+      "error": "Server error '500 Internal Server Error' for url 'https://www.denso.com.au/public/resources/DENSO_SparkPlugCatalogue-2021_Australia.pdf'"
+    },
+    {
+      "name": "denso_compressor_oil_manual.pdf",
+      "url": "https://www.denso.com.au/public/resources/DENSO%20Service%20Manual_Compressor%20Oil%20Replenishment%20Quantities.pdf",
+      "market": "Manufacturer component reference",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\denso_compressor_oil_manual.pdf",
+      "sha256": "a74ee66e707f240de3b98716375a4df8f9c01b844f13901e5d30eaae009becd9",
+      "pages": 1,
+      "bytes": 131485,
+      "library_status": "ready"
+    },
+    {
+      "name": "denso_magnetic_clutch_manual.pdf",
+      "url": "https://www.denso.com.au/public/resources/DENSO%20Service%20Manual_Magnetic%20Clutch.pdf",
+      "market": "Manufacturer component reference",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\denso_magnetic_clutch_manual.pdf",
+      "sha256": "9a053e2749466fbd69304ba91f2d7aefe37ad3e72593449127861a6fee243811",
+      "pages": 2,
+      "bytes": 398851,
+      "library_status": "ready"
+    },
+    {
+      "name": "denso_dl_pulley_manual.pdf",
+      "url": "https://www.denso.com.au/public/resources/DENSO%20Service%20Manual_DL%20Pulley_Complete.pdf",
+      "market": "Manufacturer component reference",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\denso_dl_pulley_manual.pdf",
+      "sha256": "d2524a50a2c779fb5c1a2ac4bb50016b99cb6d19845a3c1bafeacb5eb107d173",
+      "pages": 4,
+      "bytes": 1061085,
+      "library_status": "ready"
+    },
+    {
+      "name": "denso_glow_plug_australia.pdf",
+      "url": "https://www.denso.com.au/public/resources/DENSO_Glow%20Plug%20Catalogue.pdf",
+      "market": "Australia",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\denso_glow_plug_australia.pdf",
+      "sha256": "1aeab03e2abdb1712cbf23e169d9af051883770169923d5a49ce55f152087ecb",
+      "pages": 56,
+      "bytes": 3019618,
+      "library_status": "ready"
+    },
+    {
+      "name": "denso_diesel_fuel_filters_australia_2020.pdf",
+      "url": "https://www.denso.com.au/public/resources/DENSO_Diesel%20Fuel%20Filter%20CATALOGUE%202020_LoRes.pdf",
+      "market": "Australia",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\denso_diesel_fuel_filters_australia_2020.pdf",
+      "sha256": "d9909ecb4fb03af2b227a7416217783ec8fab54bf7b51dd309183bddb26fb375",
+      "pages": 16,
+      "bytes": 4208612,
+      "library_status": "ready"
+    },
+    {
+      "name": "denso_product_overview_europe.pdf",
+      "url": "https://assets.denso-am.eu/production/attachments/DENSO_Product_Brochure_EN.pdf",
+      "market": "Europe",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\denso_product_overview_europe.pdf",
+      "sha256": "e9eb6624e62e20c4505ead79d11aea1749fdead901a5aa5fbd699c62258b279f",
+      "pages": 24,
+      "bytes": 6131039,
+      "library_status": "ready"
+    },
+    {
+      "name": "ate_drum_brakes_2025.pdf",
+      "url": "https://www.ate.de/media/5615/catalogue-ate-drum-brakes-trommelbremsen-2025_v3.pdf",
+      "market": "Europe; application catalogue",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\ate_drum_brakes_2025.pdf",
+      "sha256": "8da69ef0936fed588cd87adc415d27daa6e1d17cda236a8c811f1955a49f4a9d",
+      "pages": 1038,
+      "bytes": 20336521,
+      "library_status": "ready"
+    },
+    {
+      "name": "toyota_corolla_2012_owner_manual_north_america.pdf",
+      "url": "https://www.toyota.ca/content/dam/toyota/documents/manuals/en/OM12F48U/OM12F48U.pdf",
+      "market": "North America; not Pakistan fitment proof",
+      "status": "downloaded",
+      "path": "D:\\FILES\\Main\\Suleiman\\Python For A.I\\Projects 3 Categories\\RAG PROJECTS ALL\\Can This Part Replace That — Spare-Part Compatibility Investigator\\backend\\data\\sources\\official_expansion\\toyota_corolla_2012_owner_manual_north_america.pdf",
+      "sha256": "2f6e77d5b4032ea1c1dc29867c83bfb7a5d9633bb0d8477a38c6a6ff83d2e6b4",
+      "pages": 531,
+      "bytes": 8789608,
+      "library_status": "ready"
+    },
+    {
+      "name": "toyota_corolla_2012_quick_reference_usa.pdf",
+      "url": "https://assets.sia.toyota.com/publications/en/om-s/OM12E1QRG/pdf/2012%20Corolla.pdf",
+      "market": "USA; not Pakistan fitment proof",
+      "status": "failed",
+      "error": "Client error '403 Forbidden' for url 'https://assets.sia.toyota.com/publications/en/om-s/OM12E1QRG/pdf/2012%20Corolla.pdf'"
+    },
+    {
+      "name": "toyota_corolla_2012_maintenance_usa.pdf",
+      "url": "https://assets.sia.toyota.com/publications/en/omms-s/T-MMS-12Corolla/pdf/2012_Toyota_Corolla_WMG.pdf",
+      "market": "USA; not Pakistan fitment proof",
+      "status": "failed",
+      "error": "Client error '403 Forbidden' for url 'https://assets.sia.toyota.com/publications/en/omms-s/T-MMS-12Corolla/pdf/2012_Toyota_Corolla_WMG.pdf'"
+    }
+  ]
+}

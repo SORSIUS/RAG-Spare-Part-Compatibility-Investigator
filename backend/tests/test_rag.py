@@ -145,6 +145,19 @@ class RagTests(unittest.TestCase):
         result = service.ask(ChatRequest(question="DCF901P size", mode="evidence"), Settings(self.directory))
         self.assertEqual(result["status"], "evidence_only")
 
+    def test_partial_answer_keeps_checked_facts_and_gives_next_step(self):
+        class PartialClient(ValidClient):
+            def generate(self, question, sources, history):
+                answer, usage = super().generate(question, sources, history)
+                answer.insufficient_evidence = True
+                return answer, usage
+        service = AnswerService(FixtureRepository(self.snapshot), ConversationRepository(self.directory / "partial.sqlite3"), PartialClient)
+        result = service.ask(ChatRequest(question="Explain DCF901P"), self.settings)
+        self.assertEqual(result["status"], "insufficient_evidence")
+        self.assertTrue(result["claims"])
+        self.assertTrue(result["follow_up_questions"])
+        self.assertIn("sources", result["assistant_text"])
+
     def test_conversation_persists_and_follow_up_retrieves_previous_part(self):
         path = self.directory / "chat.sqlite3"
         service = AnswerService(FixtureRepository(self.snapshot), ConversationRepository(path), ValidClient)
@@ -235,15 +248,23 @@ class ApiTests(unittest.TestCase):
             self.assertEqual(self.client.post("/api/chat", json=payload).status_code, 422)
         self.assertEqual(self.client.post("/api/chat", json={"question": "DCF901P", "conversation_id": "a" * 32}).status_code, 404)
 
-    def test_provider_error_does_not_save_failed_chat(self):
+    def test_provider_error_saves_honest_chat_recovery_with_sources(self):
         class FailureClient:
             def __init__(self, settings):
                 pass
             def generate(self, *args):
                 raise ProviderError("provider_auth", "Check the local key", 503)
         self.app.state.answers.client_factory = FailureClient
-        self.assertEqual(self.client.post("/api/chat", json={"question": "DCF901P size"}).status_code, 503)
-        self.assertEqual(self.client.get("/api/conversations").json()["conversations"], [])
+        response = self.client.post("/api/chat", json={"question": "DCF901P size"})
+        self.assertEqual(response.status_code, 200)
+        message = response.json()
+        self.assertEqual(message['status'], 'provider_unavailable')
+        self.assertEqual(message['provider_issue'], 'provider_auth')
+        self.assertTrue(message['sources'])
+        self.assertFalse(message['claims'])
+        self.assertIn('authenticate', message['assistant_text'])
+        saved = self.client.get('/api/conversations/' + message['conversation_id']).json()
+        self.assertEqual(saved['messages'][0]['assistant_text'], message['assistant_text'])
 
     def test_no_credentials_is_usable_in_evidence_mode(self):
         self.settings = Settings(self.directory)

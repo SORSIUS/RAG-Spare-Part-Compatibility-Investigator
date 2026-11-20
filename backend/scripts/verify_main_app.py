@@ -75,7 +75,7 @@ def main():
                 url = line.split("=", 1)[1]
                 break
         assert fetch(url + "/")[0] == 200
-        for asset in ["styles.css", "comparison.css", "src/app.js", "src/services/api.js", "src/components/sources.js", "src/components/comparison.js"]:
+        for asset in ["styles.css", "comparison.css", "themes.css", "storefront.css", "polish.css", "assets/automotive-hero.png", "src/app.js", "src/services/api.js", "src/services/theme.js", "src/components/sources.js", "src/components/comparison.js", "src/components/storefront.js", "src/components/parts-finder.js", "src/components/chat-feedback.js"]:
             assert fetch(url + "/" + asset)[0] == 200
         status, configuration = fetch(url + "/api/status")
         assert status == 200 and configuration["catalogue_ready"] and not configuration["llm_configured"]
@@ -88,7 +88,8 @@ def main():
         status, follow_up = fetch(url + "/api/chat", {"question": "What about its width?", "conversation_id": evidence["conversation_id"], "mode": "evidence"})
         assert status == 200 and follow_up["sources"]
         status, missing_key = fetch(url + "/api/chat", {"question": "What are the dimensions of DCF002K?"})
-        assert status == 503 and missing_key["error"]["code"] == "configuration_missing"
+        assert status == 200 and missing_key["status"] == "provider_unavailable"
+        assert missing_key['provider_issue'] == 'configuration_missing' and missing_key['sources'] and not missing_key['claims']
         status, pdf = fetch(url + evidence["sources"][0]["pdf_url"].split("#")[0])
         assert status == 200 and pdf.startswith(b"%PDF")
         assert fetch(url + "/api/catalogue/pdf?version=" + "0" * 64)[0] == 409

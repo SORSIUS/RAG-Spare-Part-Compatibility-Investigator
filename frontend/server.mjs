@@ -79,11 +79,19 @@ const assets = new Map([
   ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
   ['/comparison.css', ['comparison.css', 'text/css; charset=utf-8']],
   ['/themes.css', ['themes.css', 'text/css; charset=utf-8']],
+  ['/storefront.css', ['storefront.css', 'text/css; charset=utf-8']],
+  ['/polish.css', ['polish.css', 'text/css; charset=utf-8']],
+  ['/assets/automotive-hero.png', ['assets/automotive-hero.png', 'image/png']],
+  ['/src/components/markdown.js', ['src/components/markdown.js', 'text/javascript; charset=utf-8']],
+  ['/pages.css', ['pages.css', 'text/css; charset=utf-8']],
   ['/src/app.js', ['src/app.js', 'text/javascript; charset=utf-8']],
   ['/src/services/api.js', ['src/services/api.js', 'text/javascript; charset=utf-8']],
   ['/src/services/theme.js', ['src/services/theme.js', 'text/javascript; charset=utf-8']],
   ['/src/components/sources.js', ['src/components/sources.js', 'text/javascript; charset=utf-8']],
   ['/src/components/comparison.js', ['src/components/comparison.js', 'text/javascript; charset=utf-8']],
+  ['/src/components/parts-finder.js', ['src/components/parts-finder.js', 'text/javascript; charset=utf-8']],
+  ['/src/components/storefront.js', ['src/components/storefront.js', 'text/javascript; charset=utf-8']],
+  ['/src/components/chat-feedback.js', ['src/components/chat-feedback.js', 'text/javascript; charset=utf-8']],
 ]);
 function sendError(response, status, message) {
   if (!response.headersSent) response.writeHead(status, {'Content-Type': 'application/json', 'Cache-Control': 'no-store'});
